@@ -8,6 +8,8 @@ import { globalCache } from './cache/responseCache';
 
 dotenv.config();
 
+import path from 'path';
+
 export const app = express();
 const port = process.env.PORT || 4000;
 
@@ -22,6 +24,13 @@ app.use((req, res, next) => {
     console.log(`[CourtSide-AI] ${req.method} ${req.originalUrl} - ${res.statusCode} (${duration}ms)`);
   });
   next();
+});
+
+// ------------------------------------------------------------------
+// Interactive Judge Demo Dashboard
+// ------------------------------------------------------------------
+app.get('/demo', (_req: Request, res: Response) => {
+  res.sendFile(path.resolve(__dirname, '../demo.html'));
 });
 
 // ------------------------------------------------------------------

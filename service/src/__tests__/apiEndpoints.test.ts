@@ -9,6 +9,13 @@ describe('CourtSide AI Service HTTP Endpoints', () => {
     expect(res.body.service).toContain('CourtSide');
   });
 
+  it('GET /demo returns interactive html demo dashboard', async () => {
+    const res = await request(app).get('/demo');
+    expect(res.status).toBe(200);
+    expect(res.header['content-type']).toContain('text/html');
+    expect(res.text).toContain('CourtSide AI');
+  });
+
   it('GET /match returns match details', async () => {
     const res = await request(app).get('/match');
     expect(res.status).toBe(200);
