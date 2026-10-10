@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "service"
   ],
   "packageManager": "yarn@4.5.0",
   "resolutions": {
@@ -20,6 +21,8 @@
     "dev:ios": "yarn workspace @multi-tv/expo-multi-tv ios",
     "dev:web": "yarn workspace @multi-tv/expo-multi-tv web",
     "dev:vega": "yarn workspace @multi-tv/vega start",
+    "dev:service": "yarn workspace @courtside/service dev",
+    "test:service": "yarn workspace @courtside/service test",
     "build:all": "yarn workspaces foreach -A -pt run build",
     "build:vega": "yarn workspace @multi-tv/vega run build",
     "build:vega:debug": "yarn workspace @multi-tv/vega run build:debug",
