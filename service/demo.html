@@ -490,7 +490,7 @@
         const r = await fetch(BASE + '/recap', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ matchId: 'match-ars-mci-001', nowSec, spoilers, level })
+          body: JSON.stringify({ matchId: 'match-ars-mci-2026', nowSec, spoilers, level })
         });
         const d = await r.json();
         showJSON('recapResult', d);
@@ -513,7 +513,7 @@
       const level = document.getElementById('explainLevel').value;
       setLoading('explainSpinner', true);
       try {
-        const body = { matchId: 'match-ars-mci-001', level };
+        const body = { matchId: 'match-ars-mci-2026', level };
         if (eventId) body.eventId = eventId;
         const r = await fetch(BASE + '/explain', {
           method: 'POST',
@@ -530,7 +530,7 @@
     async function doMoments() {
       setLoading('momentsSpinner', true);
       try {
-        const r = await fetch(BASE + '/moments?matchId=match-ars-mci-001');
+        const r = await fetch(BASE + '/moments?matchId=match-ars-mci-2026');
         showJSON('momentsResult', await r.json());
       } catch(e) {
         document.getElementById('momentsResult').textContent = '❌ Error: ' + e.message;
@@ -565,7 +565,7 @@
         const r = await fetch(BASE + '/ask', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ matchId: 'match-ars-mci-001', question, nowSec, level: 'casual' })
+          body: JSON.stringify({ matchId: 'match-ars-mci-2026', question, nowSec, level: 'casual' })
         });
         showJSON('askResult', await r.json());
       } catch(e) {
