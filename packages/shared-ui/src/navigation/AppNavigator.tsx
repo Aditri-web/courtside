@@ -2,6 +2,7 @@ import React, { useEffect, StrictMode } from 'react';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { Platform } from 'react-native';
 import { MenuProvider } from '../components/MenuContext';
+import { ProfileProvider } from '../companion/ProfileContext';
 import { GoBackConfiguration } from '../app/remote-control/GoBackConfiguration';
 import RootNavigator from './RootNavigator';
 
@@ -35,10 +36,12 @@ export default function AppNavigator({ fontsLoaded = true, onReady }: AppNavigat
   return (
     <StrictMode>
       <NavigationContainer theme={DarkTheme}>
-        <MenuProvider>
-          <GoBackConfiguration />
-          <RootNavigator />
-        </MenuProvider>
+        <ProfileProvider>
+          <MenuProvider>
+            <GoBackConfiguration />
+            <RootNavigator />
+          </MenuProvider>
+        </ProfileProvider>
       </NavigationContainer>
     </StrictMode>
   );

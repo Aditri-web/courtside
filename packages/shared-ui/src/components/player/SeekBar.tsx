@@ -20,7 +20,7 @@ const SeekBar = React.memo(({ currentTime, duration }: SeekBarProps) => {
   return (
     <View style={seekBarStyles.seekbarContainer}>
       <View style={seekBarStyles.seekbarTrack} />
-      <View style={[seekBarStyles.seekbarThumb, thumbPosition]} />
+      <View style={[seekBarStyles.seekbarThumb, thumbPosition as any]} />
     </View>
   );
 });

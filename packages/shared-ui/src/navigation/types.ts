@@ -14,14 +14,15 @@ export type RootStackParamList = {
     duration?: number;
   };
   Player: {
-    movie: string;
-    headerImage: string;
+    movie?: string;
+    headerImage?: string;
   };
 };
 
 export type DrawerParamList = {
   Home: undefined;
-  Explore: undefined;
-  TV: undefined;
+  Live: undefined;
+  Highlights: undefined;
+  Family: undefined;
   Settings: undefined;
 };

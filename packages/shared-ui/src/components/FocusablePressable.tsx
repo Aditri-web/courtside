@@ -13,7 +13,8 @@ import { colors } from "../theme/colors";
 interface CustomPressableProps extends PressableProps {
   text: string;
   onSelect: () => void;
-  style?: ViewStyle;
+  style?: any;
+  accessibilityLabel?: string;
 }
 
 const FocusablePressable = React.memo(({

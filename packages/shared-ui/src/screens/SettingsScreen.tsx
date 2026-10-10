@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text, Image } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import {
   SpatialNavigationRoot,
   SpatialNavigationNode,
@@ -8,21 +8,17 @@ import {
 import { DrawerActions, useIsFocused, useNavigation } from '@react-navigation/native';
 import { Direction } from '@bam.tech/lrud';
 import { scaledPixels } from '../hooks/useScale';
-import { colors, safeZones } from '../theme';
 import FocusablePressable from '../components/FocusablePressable';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useMenuContext } from '../components/MenuContext';
 import { getOpenDrawerDirection } from '../utils/rtl';
+import { useProfile } from '../companion/ProfileContext';
 
 export default function SettingsScreen() {
   const isFocused = useIsFocused();
   const navigation = useNavigation();
   const { isOpen: isMenuOpen, toggleMenu } = useMenuContext();
-  const [selectedQuality, setSelectedQuality] = useState('Auto');
-  const [notifications, setNotifications] = useState(true);
-  const [autoplay, setAutoplay] = useState(true);
-
-  const qualityOptions = ['Auto', '1080p', '720p', '480p'];
+  const { profile, toggleSpoilers, setLevel, setMode, setFontScale, aiServiceUrl } = useProfile();
 
   const onDirectionHandledWithoutMovement = useCallback(
     (movement: Direction) => {
@@ -41,92 +37,111 @@ export default function SettingsScreen() {
     >
       <View style={styles.container}>
         <View style={styles.innerContainer}>
-          <Text style={styles.title}>Settings</Text>
+          <Text style={styles.title}>⚙️ CourtSide Settings & Preferences</Text>
           <SpatialNavigationScrollView style={styles.scrollView}>
             <View style={styles.scrollContent}>
-              {/* Video Quality Section */}
+              {/* AI & Spoilers Section */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Video Quality</Text>
+                <Text style={styles.sectionTitle}>🛡️ AI & Spoilers Protection</Text>
+                <SpatialNavigationNode orientation="vertical">
+                  <View style={styles.optionsColumn}>
+                    <DefaultFocus>
+                      <FocusablePressable
+                        text={`Spoilers Mode: ${profile.spoilers ? '⚠️ Unrestricted (Show Scores)' : '🛡️ Spoiler-Free (Protected)'}`}
+                        onSelect={toggleSpoilers}
+                        style={styles.toggleButton}
+                        accessibilityLabel="Toggle spoiler protection"
+                      />
+                    </DefaultFocus>
+                  </View>
+                </SpatialNavigationNode>
+              </View>
+
+              {/* Explanation Level Section */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>🧠 Default Explanation Level</Text>
                 <SpatialNavigationNode orientation="horizontal">
                   <View style={styles.optionsRow}>
-                    {qualityOptions.map((quality, index) => (
-                      index === 0 ? (
-                        <DefaultFocus key={quality}>
-                          <FocusablePressable
-                            text={quality}
-                            onSelect={() => setSelectedQuality(quality)}
-                            style={[
-                              styles.optionButton,
-                              selectedQuality === quality && styles.selectedOption,
-                            ]}
-                          />
-                        </DefaultFocus>
-                      ) : (
-                        <FocusablePressable
-                          key={quality}
-                          text={quality}
-                          onSelect={() => setSelectedQuality(quality)}
-                          style={[
-                            styles.optionButton,
-                            selectedQuality === quality && styles.selectedOption,
-                          ]}
-                        />
-                      )
+                    {(['kid', 'casual', 'expert'] as const).map((lvl) => (
+                      <FocusablePressable
+                        key={lvl}
+                        text={`${lvl === 'kid' ? '🧒 Kid' : lvl === 'casual' ? '⚽ Casual' : '📊 Expert'} ${profile.level === lvl ? '✓' : ''}`}
+                        onSelect={() => setLevel(lvl)}
+                        style={[
+                          styles.optionButton,
+                          profile.level === lvl && styles.selectedOption,
+                        ]}
+                        accessibilityLabel={`Select ${lvl} level explanation`}
+                      />
                     ))}
                   </View>
                 </SpatialNavigationNode>
               </View>
 
-              {/* Playback Section */}
+              {/* Mode Selection */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Playback</Text>
-                <SpatialNavigationNode orientation="vertical">
-                  <View style={styles.optionsColumn}>
+                <Text style={styles.sectionTitle}>👨‍👩‍👧 Profile Mode</Text>
+                <SpatialNavigationNode orientation="horizontal">
+                  <View style={styles.optionsRow}>
                     <FocusablePressable
-                      text={`Autoplay: ${autoplay ? 'On' : 'Off'}`}
-                      onSelect={() => setAutoplay(!autoplay)}
-                      style={styles.toggleButton}
+                      text={`Standard Mode ${profile.mode === 'standard' ? '✓' : ''}`}
+                      onSelect={() => setMode('standard')}
+                      style={[
+                        styles.optionButton,
+                        profile.mode === 'standard' && styles.selectedOption,
+                      ]}
+                      accessibilityLabel="Select Standard profile mode"
                     />
                     <FocusablePressable
-                      text={`Notifications: ${notifications ? 'On' : 'Off'}`}
-                      onSelect={() => setNotifications(!notifications)}
-                      style={styles.toggleButton}
+                      text={`Family Mode ${profile.mode === 'family' ? '✓' : ''}`}
+                      onSelect={() => setMode('family')}
+                      style={[
+                        styles.optionButton,
+                        profile.mode === 'family' && styles.selectedOption,
+                      ]}
+                      accessibilityLabel="Select Family profile mode"
                     />
                   </View>
                 </SpatialNavigationNode>
               </View>
 
-              {/* About Section */}
+              {/* Font Scaling (10-Foot UI) */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>About</Text>
-                <View style={styles.infoContainer}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Version</Text>
-                    <Text style={styles.infoValue}>1.0.0</Text>
+                <Text style={styles.sectionTitle}>📐 10-Foot TV Font Scaling</Text>
+                <SpatialNavigationNode orientation="horizontal">
+                  <View style={styles.optionsRow}>
+                    <FocusablePressable
+                      text={`Standard (1.0x) ${profile.fontSizeScale === 1.0 ? '✓' : ''}`}
+                      onSelect={() => setFontScale(1.0)}
+                      style={[
+                        styles.optionButton,
+                        profile.fontSizeScale === 1.0 && styles.selectedOption,
+                      ]}
+                      accessibilityLabel="Set standard font scaling"
+                    />
+                    <FocusablePressable
+                      text={`Large (1.25x) ${profile.fontSizeScale === 1.25 ? '✓' : ''}`}
+                      onSelect={() => setFontScale(1.25)}
+                      style={[
+                        styles.optionButton,
+                        profile.fontSizeScale === 1.25 && styles.selectedOption,
+                      ]}
+                      accessibilityLabel="Set large font scaling for living room viewing"
+                    />
                   </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Build</Text>
-                    <Text style={styles.infoValue}>2025.11.04</Text>
-                  </View>
+                </SpatialNavigationNode>
+              </View>
+
+              {/* AI Service & Build Status */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>ℹ️ CourtSide Architecture Information</Text>
+                <View style={styles.infoCard}>
+                  <Text style={styles.infoText}>• AI Service Endpoint: {aiServiceUrl}</Text>
+                  <Text style={styles.infoText}>• Amazon Devices Builder Tools: MCP Server + Agent Skills Active</Text>
+                  <Text style={styles.infoText}>• Target Platforms: Fire OS / Vega OS / Universal TV Web</Text>
+                  <Text style={styles.infoText}>• Alexa Voice Navigation: ARIA labels on all key controls</Text>
+                  <Text style={styles.infoText}>• Offline Fallback Pack: Active (Zero-failure demo mode)</Text>
                 </View>
-              </View>
-
-              {/* Actions Section */}
-              <View style={styles.section}>
-                <SpatialNavigationNode orientation="vertical">
-                  <View style={styles.optionsColumn}>
-                    <FocusablePressable
-                      text="Clear Cache"
-                      onSelect={() => console.log('Clear cache')}
-                      style={styles.actionButton}
-                    />
-                    <FocusablePressable
-                      text="Sign Out"
-                      onSelect={() => console.log('Sign out')}
-                      style={styles.actionButton}
-                    />
-                  </View>
-                </SpatialNavigationNode>
               </View>
             </View>
           </SpatialNavigationScrollView>
@@ -138,105 +153,71 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'black',
-    zIndex: 100,
-  },
-  headerContainer: {
-    width: '100%',
-    height: scaledPixels(700),
-    position: 'relative',
-  },
-  backgroundImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  gradientLeft: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    height: '100%',
-  },
-  gradientBottom: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '100%',
+    flex: 1,
+    backgroundColor: '#0F172A',
   },
   innerContainer: {
     flex: 1,
-    backgroundColor: 'black',
-    paddingTop: scaledPixels(20),
+    paddingTop: scaledPixels(40),
+    paddingHorizontal: scaledPixels(48),
+  },
+  title: {
+    fontSize: scaledPixels(32),
+    fontWeight: 'bold',
+    color: '#00E5FF',
+    marginBottom: scaledPixels(24),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: scaledPixels(safeZones.titleSafe.horizontal),
-    paddingTop: scaledPixels(16),
-    paddingBottom: scaledPixels(safeZones.actionSafe.vertical + 60),
-  },
-  title: {
-    fontSize: scaledPixels(48),
-    fontWeight: 'bold',
-    color: colors.text,
-    paddingHorizontal: scaledPixels(safeZones.titleSafe.horizontal),
-    marginBottom: scaledPixels(32),
+    paddingBottom: scaledPixels(40),
   },
   section: {
-    marginBottom: scaledPixels(40),
+    marginBottom: scaledPixels(28),
   },
   sectionTitle: {
-    fontSize: scaledPixels(28),
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: scaledPixels(20),
+    fontSize: scaledPixels(18),
+    fontWeight: '700',
+    color: '#E2E8F0',
+    marginBottom: scaledPixels(12),
   },
   optionsRow: {
     flexDirection: 'row',
-    gap: scaledPixels(16),
-    flexWrap: 'wrap',
+    gap: scaledPixels(12),
   },
   optionsColumn: {
-    gap: scaledPixels(16),
+    gap: scaledPixels(12),
   },
   optionButton: {
-    marginEnd: scaledPixels(12),
-    marginBottom: scaledPixels(12),
+    minWidth: scaledPixels(150),
+    paddingVertical: scaledPixels(12),
+    paddingHorizontal: scaledPixels(20),
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderRadius: scaledPixels(8),
   },
   selectedOption: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#0284C7',
+    borderColor: '#38BDF8',
   },
   toggleButton: {
+    paddingVertical: scaledPixels(14),
+    paddingHorizontal: scaledPixels(24),
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderRadius: scaledPixels(8),
     alignSelf: 'flex-start',
-    minWidth: scaledPixels(300),
   },
-  actionButton: {
-    alignSelf: 'flex-start',
-    minWidth: scaledPixels(250),
+  infoCard: {
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    borderRadius: scaledPixels(10),
+    padding: scaledPixels(16),
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  infoContainer: {
-    backgroundColor: colors.card,
-    borderRadius: scaledPixels(12),
-    padding: scaledPixels(24),
-    gap: scaledPixels(16),
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  infoLabel: {
-    fontSize: scaledPixels(24),
-    color: colors.textSecondary,
+  infoText: {
+    color: '#94A3B8',
+    fontSize: scaledPixels(13),
+    lineHeight: scaledPixels(22),
     fontWeight: '500',
-  },
-  infoValue: {
-    fontSize: scaledPixels(24),
-    color: colors.text,
-    fontWeight: '600',
   },
 });

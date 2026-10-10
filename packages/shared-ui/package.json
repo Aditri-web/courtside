@@ -16,7 +16,14 @@
     "react-native": "*"
   },
   "devDependencies": {
+    "@react-navigation/drawer": "^7.0.0",
+    "@react-navigation/native": "^7.0.0",
+    "@react-navigation/native-stack": "^7.0.0",
     "@types/react": "~19.1.0",
+    "react": "19.1.0",
+    "react-native": "npm:react-native-tvos@~0.81.0-0",
+    "react-native-video": "^6.8.0",
+    "react-tv-space-navigation": "6.0.0-beta1",
     "typescript": "~5.7.0"
   }
 }

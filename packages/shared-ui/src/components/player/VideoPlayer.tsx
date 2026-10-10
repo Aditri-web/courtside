@@ -70,7 +70,7 @@ const VideoPlayer = React.memo(
           onProgress={({ currentTime }) => onProgress(currentTime)}
           onLoad={({ duration }) => onLoad(duration)}
           onEnd={onEnd}
-          poster={posterConfig}
+          poster={posterConfig as any}
           resizeMode="cover"
         />
       );

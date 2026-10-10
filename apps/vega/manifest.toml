@@ -5,9 +5,9 @@
 schema-version = 1
 
 [package]
-title = "Multi TV Vega App"
-version = "0.1.0"
-id = "com.giolaq.multitv.vega"
+title = "CourtSide AI Sports Companion"
+version = "1.0.0"
+id = "com.courtside.app.vega"
 
 [os.version]
 min = "1.2"
@@ -15,7 +15,7 @@ target = "1.2"
 
 [components]
 [[components.interactive]]
-id = "com.giolaq.multitv.vega.main"
+id = "com.courtside.app.vega.main"
 runtime-module = "/com.amazon.kepler.keplerscript.runtime.loader_2@IKeplerScript_2_0"
 launch-type = "singleton"
 categories = [
@@ -28,7 +28,7 @@ categories = [
 ## ------------------------------------------------------------------------------
 [processes]
 [[processes.group]]
-component-ids = ["com.giolaq.multitv.vega.main"]
+component-ids = ["com.courtside.app.vega.main"]
 
 ## ------------------------------------------------------------------------------
 ## Wants - Optional capabilities

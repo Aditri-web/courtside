@@ -50,14 +50,14 @@
       ],
       "./plugins/withFmtXcode26Fix"
     ],
-    "name": "MultiTVSample",
-    "slug": "MultiTVSample",
-    "scheme": "com.anonymous.MultiTVSample",
+    "name": "CourtSide",
+    "slug": "courtside",
+    "scheme": "com.courtside.app",
     "android": {
-      "package": "com.anonymous.MultiTVSample"
+      "package": "com.courtside.app"
     },
     "ios": {
-      "bundleIdentifier": "com.anonymous.MultiTVSample"
+      "bundleIdentifier": "com.courtside.app"
     },
     "newArchEnabled": false
   }

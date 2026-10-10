@@ -15,9 +15,24 @@ export { default as CustomDrawerContent } from './components/CustomDrawerContent
 export { default as HomeScreen } from './screens/HomeScreen';
 export { default as DetailsScreen } from './screens/DetailsScreen';
 export { default as PlayerScreen } from './screens/PlayerScreen';
+export { default as MatchScreen } from './screens/MatchScreen';
+export { default as HighlightsScreen } from './screens/HighlightsScreen';
+export { default as FamilyScreen } from './screens/FamilyScreen';
 export { default as ExploreScreen } from './screens/ExploreScreen';
 export { default as TVScreen } from './screens/TVScreen';
 export { default as SettingsScreen } from './screens/SettingsScreen';
+
+// CourtSide Companion Features
+export * from './companion/types';
+export * from './companion/staticData';
+export { CompanionPanel } from './companion/CompanionPanel';
+export { CatchUpTab } from './companion/CatchUpTab';
+export { ExplainTab } from './companion/ExplainTab';
+export { MomentsTab } from './companion/MomentsTab';
+export { AskTab } from './companion/AskTab';
+export { LiveOverlay } from './companion/LiveOverlay';
+export { aiClient } from './companion/aiClient';
+export { ProfileProvider, useProfile } from './companion/ProfileContext';
 
 // Utils
 export { VideoHandler } from './utils/VideoHandler';

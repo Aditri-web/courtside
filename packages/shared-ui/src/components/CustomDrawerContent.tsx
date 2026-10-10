@@ -14,9 +14,10 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
   const { isOpen: isMenuOpen, toggleMenu } = useMenuContext();
   const styles = drawerStyles;
   const drawerItems = [
-    { name: 'Home', label: 'Home' },
-    { name: 'Explore', label: 'Explore' },
-    { name: 'TV', label: 'TV' },
+    { name: 'Home', label: '🏠 Home' },
+    { name: 'Live', label: '🔴 Live Match' },
+    { name: 'Highlights', label: '⚽ Highlights' },
+    { name: 'Family', label: '👨‍👩‍👧 Family Picks' },
   ] as const;
 
   const onDirectionHandledWithoutMovement = useCallback(
