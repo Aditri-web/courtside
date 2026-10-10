@@ -2,8 +2,15 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { AppNavigator } from '@multi-tv/shared-ui';
-import { LogBox } from 'react-native';
-import '../../packages/shared-ui/src/app/configureRemoteControl';
+import { LogBox, Platform } from 'react-native';
+
+if (Platform.isTV) {
+  try {
+    require('../../packages/shared-ui/src/app/configureRemoteControl');
+  } catch (e) {
+    console.warn('Remote control configuration not available on this platform:', e);
+  }
+}
 
 // Suppress specific deprecation warnings that don't affect functionality
 // These warnings come from libraries using deprecated React methods

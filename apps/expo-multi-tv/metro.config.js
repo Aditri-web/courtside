@@ -11,15 +11,45 @@ config.watchFolders = [
   path.resolve(__dirname, '../..'),
 ];
 
+const appNodeModules = path.resolve(__dirname, 'node_modules');
+
 config.resolver = {
   ...config.resolver,
   unstable_enableSymlinks: true,
   nodeModulesPaths: [
-    path.resolve(__dirname, 'node_modules'),
+    appNodeModules,
     path.resolve(__dirname, '../../node_modules'),
   ],
   extraNodeModules: {
     '@multi-tv/shared-ui': path.resolve(__dirname, '../../packages/shared-ui/src'),
+    react: path.resolve(appNodeModules, 'react'),
+    'react-dom': path.resolve(appNodeModules, 'react-dom'),
+    'react-native': path.resolve(appNodeModules, 'react-native'),
+    'react-native-web': path.resolve(appNodeModules, 'react-native-web'),
+  },
+  resolveRequest: (context, moduleName, platform) => {
+    if (moduleName === 'react' || moduleName.startsWith('react/')) {
+      const target = moduleName === 'react' 
+        ? path.resolve(appNodeModules, 'react') 
+        : path.resolve(appNodeModules, moduleName);
+      return context.resolveRequest(context, target, platform);
+    }
+    if (moduleName === 'react-dom' || moduleName.startsWith('react-dom/')) {
+      const target = moduleName === 'react-dom'
+        ? path.resolve(appNodeModules, 'react-dom')
+        : path.resolve(appNodeModules, moduleName);
+      return context.resolveRequest(context, target, platform);
+    }
+    if (moduleName === 'react-native') {
+      const target = platform === 'web'
+        ? path.resolve(appNodeModules, 'react-native-web')
+        : path.resolve(appNodeModules, 'react-native');
+      return context.resolveRequest(context, target, platform);
+    }
+    if (moduleName === 'react-native-web') {
+      return context.resolveRequest(context, path.resolve(appNodeModules, 'react-native-web'), platform);
+    }
+    return context.resolveRequest(context, moduleName, platform);
   },
 };
 
