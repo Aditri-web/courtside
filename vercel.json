@@ -1,0 +1,15 @@
+{
+  "installCommand": "corepack enable && yarn install",
+  "buildCommand": "yarn build:web",
+  "outputDirectory": "apps/expo-multi-tv/dist",
+  "rewrites": [
+    {
+      "source": "/demo",
+      "destination": "/demo.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
