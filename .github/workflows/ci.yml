@@ -1,0 +1,38 @@
+name: CourtSide CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Test & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Enable Corepack & Modern Yarn
+        run: |
+          corepack enable
+          corepack prepare yarn@4.5.0 --activate
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Test AI Service (Unit & Schema Tests)
+        run: yarn test:service
+
+      - name: Typecheck Shared UI
+        run: yarn workspace @multi-tv/shared-ui typecheck
+
+      - name: Test Multi-TV App
+        run: yarn workspace @multi-tv/expo-multi-tv test --watchAll=false
