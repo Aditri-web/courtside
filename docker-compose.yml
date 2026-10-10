@@ -1,0 +1,33 @@
+version: '3.9'
+
+# ----------------------------------------------------------------
+# CourtSide AI Service — Docker Compose
+# Run the AI backend instantly with:
+#   docker compose up
+# Then open http://localhost:4000/health to confirm it's running.
+# ----------------------------------------------------------------
+
+services:
+  courtside-ai:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./service:/app
+    ports:
+      - '4000:4000'
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      CACHE_TTL_MS: ${CACHE_TTL_MS:-300000}
+    command: >
+      sh -c "npm install --production &&
+             npx ts-node src/server.ts"
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:4000/health']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped

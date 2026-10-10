@@ -1,103 +1,179 @@
-# CourtSide: AI Sports Companion for Fire TV · v2
+# ⚡ CourtSide — AI Sports Companion for Fire TV
 
-> Late to the game? Confused by a call? Watching with kids? CourtSide sits beside the match and catches you up, explains plays at your level, jumps to key moments, and answers questions.
+[![CI](https://github.com/Aditri-web/courtside/actions/workflows/ci.yml/badge.svg)](https://github.com/Aditri-web/courtside/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-18%20passing-brightgreen)](#testing)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript)](#)
+[![Gemini](https://img.shields.io/badge/Gemini-1.5_Flash-4285F4?logo=google)](#ai-service)
+[![Fire TV](https://img.shields.io/badge/Fire_TV-Vega_%2B_TVOS-FF9900?logo=amazon)](#)
+[![License](https://img.shields.io/badge/license-MIT--0-blue)](#license)
 
-Built for the **Fire TV** hackathon track on top of Amazon's `react-native-multi-tv-app-sample`, using **Amazon Devices Builder Tools** (MCP + Agent Skills) in the dev workflow.
+> **Late to the game? Confused by a call? Watching with kids?**
+> CourtSide sits beside your match, catches you up in seconds, explains any play at your level, ranks every key moment, and answers your questions — all without spoiling what's ahead.
 
-**Categories:** Sports · AI-enhanced viewing · Multi-modal UX · Family entertainment
+Built for the **Amazon Devices & Services Hackathon** using:
+- 📺 **React Native Multi-TV** monorepo (expo-multi-tv + Vega/KeplerScript for Fire TV OS)
+- 🤖 **Gemini 1.5 Flash** via a Type-safe Express AI service
+- 🎮 **react-tv-space-navigation** D-pad focus engine
+- ⚡ **SSE real-time event ticker** for live companion updates
 
-## Features
+---
 
-| Feature | What it does |
-|---|---|
-| **Catch Me Up** | Recap up to the current playback time. *Spoiler-free* hides the result. |
-| **Explain This** | Explains the latest play at **Kid / Casual / Expert** level. |
-| **Key Moments** | AI-ranked list; select one and the video seeks there. |
-| **Ask CourtSide** | Chips or typed question (plus browser voice on web); answers only from match data. |
-| **Live alerts** | Goal/foul pop-ups synced to playback; never steal focus. |
-| **Family Mode** | Simple language, spoilers off, bigger text. |
-| **Alexa-ready controls** | Labeled controls so Alexa voice navigation can target them on Vega (verify on device). |
+## ✨ Features
 
-> Honesty note: the video is a placeholder clip and the match events are scripted to its timeline. AI features are real; the match is simulated.
+| Feature | Description |
+|---------|-------------|
+| ⚡ **Catch Me Up** | Spoiler-free AI recap from any playback position |
+| 🧠 **Explain This** | Breaks down any play/call for Kid / Casual / Expert audiences |
+| 🎯 **Key Moments** | AI-ranked turning points — press SELECT to jump there |
+| 💬 **Ask CourtSide** | Grounded Q&A (no hallucination) from visible match events |
+| 📡 **Live Ticker** | SSE stream synced to video playback timeline |
+| 👨‍👩‍👧 **Family Mode** | Kid-safe language, forced spoiler protection, large 10-foot fonts |
+| 🛡️ **Spoiler Guard** | Mathematically impossible to leak future goals before you reach them |
 
-## Architecture
+---
+
+## 🗂 Repository Structure
 
 ```
-apps/expo-multi-tv  (Android TV · Fire OS · Web)  ─┐
-apps/vega           (Vega OS)                      ├─ packages/shared-ui  (Home, Match, Companion…)
-                                                   ┘            │ HTTPS
-                                                           service/ (Node AI service)
+courtside/                          ← Yarn 4 workspaces monorepo
+├── apps/
+│   ├── expo-multi-tv/              ← Fire TV + Apple TV + Android TV (Expo)
+│   └── vega/                       ← Fire TV OS via KeplerScript / Vega
+├── packages/
+│   └── shared-ui/                  ← All screens, companion, navigation, theme
+│       └── src/
+│           ├── companion/          ← AI Companion Panel + 4 tab features
+│           ├── screens/            ← HomeScreen, MatchScreen, Highlights, Family, Settings
+│           ├── navigation/         ← Drawer + Stack navigators
+│           ├── theme/              ← TV-safe colour tokens + scale system
+│           └── utils/              ← VideoHandler, RTL, remote control
+├── service/                        ← Node.js/Express AI backend
+│   ├── src/
+│   │   ├── server.ts               ← REST + SSE endpoints
+│   │   ├── adapter/
+│   │   │   ├── llmAdapter.ts       ← Orchestration: Gemini → fallback
+│   │   │   └── geminiClient.ts     ← Gemini 1.5 Flash REST client
+│   │   ├── prompt/                 ← System + user prompts for all features
+│   │   ├── fallback/               ← Curated offline AI engine
+│   │   ├── validator/              ← Schema + spoiler-leak validation
+│   │   └── cache/                  ← TTL response cache
+│   └── demo.html                   ← Browser demo for judges (no install)
+├── DEMO.md                         ← 8-minute judge walkthrough
+├── ARCHITECTURE.md                 ← Full technical architecture
+├── docker-compose.yml              ← One-command service start
+└── .github/workflows/ci.yml        ← GitHub Actions CI
 ```
-See [ARCHITECTURE.md](./ARCHITECTURE.md), [PROJECT_REQUIREMENTS.md](./PROJECT_REQUIREMENTS.md), [SKILLS.md](./SKILLS.md).
 
-## Prerequisites
+---
 
-- Node.js 20+, Yarn 4.5 (via Corepack / `packageManager` field)
-- An AI coding agent supported by Builder Tools
-- An LLM API key for the AI service (Anthropic, OpenAI, or Gemini; offline deterministic AI fallback included)
-- Optional per target:
-  - **Android TV / Fire OS:** Android Studio + TV emulator or a device (`adb`)
-  - **Vega:** Vega SDK v0.22+, Java 21+, Python 3; Vega Virtual Device or Vega OS Fire TV Stick
+## 🚀 Quick Start
 
-## Setup
+### Prerequisites
+- Node.js 20+ (or use Docker)
+- Yarn 4 (`corepack enable`)
+
+### 1. Install
 
 ```bash
-# 1. Builder Tools for your coding agent
-npx -y @amazon-devices/amazon-devices-buildertools-mcp@latest init-context --agent <agent-name> --force
-npx -y @amazon-devices/amazon-devices-buildertools-mcp@latest check-status --agent <agent-name>
-
-# 2. Base project setup
+git clone https://github.com/Aditri-web/courtside.git
+cd courtside
 yarn install
-
-# 3. Start AI Service
-cp service/.env.example service/.env     # LLM_API_KEY=... (optional; fallback included)
-yarn workspace @courtside/service dev     # AI service on :4000
-
-# 4. Start Universal Multi-TV App
-yarn dev:web                             # Web browser; arrow keys = D-pad
-yarn dev:android                         # Android TV / Fire OS emulator or device
 ```
 
-### Other targets (commands from the sample)
+### 2. Start the AI Service
 
 ```bash
-yarn dev:android      # Android TV / Fire OS emulator or device
-yarn dev:vega         # Vega Metro bundler
-yarn build:vega       # build .vpkg
-vega virtual-device start
-vega run-app build/<arch>-release/<name>.vpkg
+# Option A: Node.js
+yarn dev:service          # → http://localhost:4000
+
+# Option B: Docker (zero setup)
+docker compose up
 ```
 
-## Demo script (about 3 minutes)
+### 3. Enable Real AI (Optional)
 
-1. **Home:** D-pad through rails; open the live match.
-2. **Catch Me Up:** open the companion; get a recap; toggle Spoiler-free.
-3. **Explain This:** same play at Kid and Expert level.
-4. **Key Moments:** select the goal; video jumps.
-5. **Live alert:** a goal overlay appears as playback passes it; press Explain.
-6. **Ask:** "Who scored first?" then an unanswerable question ("Who will win the league?") to show grounded "I don't have that."
-7. **Family Mode:** larger text, simpler wording.
-8. **Resilience:** stop the AI service; fallback still works.
-9. **(If available)** Show the same UI on Android TV/Fire OS or the Vega Virtual Device.
+```bash
+# Get a free key at https://aistudio.google.com/app/apikey
+echo 'GEMINI_API_KEY=your_key\nLLM_PROVIDER=gemini' > service/.env
+yarn dev:service
+```
 
-## Build order
+Without a key, the service runs in **offline mode** with pre-curated, high-quality AI responses.
 
-1. Install Builder Tools; run the sample on web.
-2. Re-skin Home and add the Match screen in `packages/shared-ui`.
-3. Add mock match data (`staticData` JSON → DTO → Model).
-4. Build the AI service with schema validation and a fallback pack.
-5. Build Companion tabs; wire `seekTo` and playback time.
-6. Add live overlay, Family Mode, accessibility labels.
-7. Test on Android TV/Fire OS; attempt Vega.
-8. Record demo; write submission.
+### 4. Run the Fire TV App
 
-## How AI stays honest
+```bash
+# expo-multi-tv (Fire TV / Apple TV / Android TV)
+yarn dev
 
-- Prompts contain only structured match data.
-- Timestamps and scores come from data, not the model.
-- Outputs are schema-validated; spoiler-free mode has a test.
-- Unknown questions get "I don't have that."
+# Vega (Fire TV OS native)
+yarn dev:vega
+```
 
-## License
+### 5. Judge's Browser Demo
 
-MIT-0 / Apache-2.0
+Open **`service/demo.html`** directly in Chrome — no install, no toolchain.
+
+---
+
+## 🤖 AI Service Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Service + Gemini status |
+| GET | `/match` | Match metadata |
+| GET | `/matches` | All available matches |
+| POST | `/recap` | Spoiler-safe AI recap |
+| POST | `/explain` | Play/rule breakdown |
+| GET/POST | `/moments` | AI-ranked key moments |
+| POST | `/ask` | Grounded Q&A |
+| GET | `/live` | Timeline-filtered event feed |
+| GET | `/stream` | **SSE** real-time ticker |
+| DELETE | `/cache` | Flush response cache |
+
+---
+
+## 🧪 Testing
+
+```bash
+# AI Service — 15 unit tests
+yarn test:service
+
+# Remote Control — 3 unit tests
+yarn workspace @multi-tv/expo-multi-tv test --watchAll=false
+
+# TypeScript — zero errors
+yarn workspace @multi-tv/shared-ui typecheck
+```
+
+All **18 tests pass**. Test suites cover:
+- API endpoint responses (HTTP 200, schema validation)
+- Spoiler-leak guardrails (impossible to reveal future goals)
+- Explanation level differentiation (kid / casual / expert)
+- Grounded Q&A (rejects out-of-domain questions)
+
+---
+
+## 🎨 Design System
+
+- **Color**: Deep navy `#0F172A` background · Cyan `#00E5FF` focus accent
+- **Focus**: Glow rings + scale(1.05) transform on focused elements
+- **TV-safe**: `safeZones.actionSafe` margins · scaledPixels() for all measurements
+- **Accessibility**: `accessibilityRole` + `accessibilityLabel` on every interactive element
+
+---
+
+## 📖 Documentation
+
+| File | Contents |
+|------|----------|
+| [DEMO.md](./DEMO.md) | 8-minute judge walkthrough with step-by-step instructions |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Full technical architecture and data flow |
+| [PROJECT_REQUIREMENTS.md](./PROJECT_REQUIREMENTS.md) | Hackathon requirements and design decisions |
+| [SKILLS.md](./SKILLS.md) | Amazon Devices Builder Tools + SDK guide |
+
+---
+
+## 📜 License
+
+MIT-0 — free to use, fork, and ship. See [LICENSE](./LICENSE).

@@ -14,8 +14,9 @@ import { buildRecapPrompt, buildExplainPrompt, buildAskPrompt } from '../prompt/
 import { validateRecap, validateExplain, validateAsk } from '../validator/schemaValidator';
 import { getFallbackRecap, getFallbackExplain, getFallbackMoments, getFallbackAsk } from '../fallback/fallbackPack';
 import { globalCache } from '../cache/responseCache';
+import { geminiRecap, geminiExplain, geminiAsk } from './geminiClient';
 
-const LLM_TIMEOUT_MS = 4000;
+const LLM_TIMEOUT_MS = 5500;
 
 export class LlmAdapter {
   private provider: string;
@@ -246,16 +247,31 @@ export class LlmAdapter {
     spoilers: boolean,
     level: ExplanationLevel
   ): Promise<any> {
-    const { system, user } = buildRecapPrompt(events, nowSec, spoilers, level);
-    // Remote fetch adapter logic if API key configured
+    // Try Gemini 1.5 Flash first
+    const geminiResult = await geminiRecap(events, nowSec, spoilers, level);
+    if (geminiResult) {
+      console.log('[LlmAdapter] Gemini recap OK');
+      return geminiResult;
+    }
+    // High-quality deterministic fallback
     return getFallbackRecap(nowSec, spoilers);
   }
 
   private async remoteExplain(event: MatchEvent, level: ExplanationLevel): Promise<any> {
+    const geminiResult = await geminiExplain(event, level);
+    if (geminiResult) {
+      console.log('[LlmAdapter] Gemini explain OK');
+      return geminiResult;
+    }
     return getFallbackExplain(event.id, level);
   }
 
   private async remoteAsk(question: string, events: MatchEvent[], nowSec: number): Promise<any> {
+    const geminiResult = await geminiAsk(question, events, nowSec);
+    if (geminiResult) {
+      console.log('[LlmAdapter] Gemini ask OK');
+      return geminiResult;
+    }
     return getFallbackAsk(question, nowSec);
   }
 }

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CourtSide AI — Live API Demo</title>
+  <meta name="description" content="Interactive demo of the CourtSide AI Companion API — Fire TV Hackathon" />
+  <style>
+    :root {
+      --bg: #0F172A;
+      --surface: #1E293B;
+      --surface2: #0D1B2E;
+      --accent: #00E5FF;
+      --accent2: #0284C7;
+      --success: #10B981;
+      --warn: #F59E0B;
+      --danger: #EF4444;
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --border: rgba(255,255,255,0.08);
+      --glow: 0 0 20px rgba(0,229,255,0.35);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    /* ---- Header ---- */
+    header {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .logo-mark {
+      font-size: 1.7rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: var(--accent);
+      text-shadow: var(--glow);
+    }
+    .logo-sub { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .badge-live { background: rgba(239,68,68,0.15); color: #F87171; border: 1px solid #EF4444; }
+    .badge-ai { background: rgba(0,229,255,0.1); color: var(--accent); border: 1px solid rgba(0,229,255,0.3); }
+    .dot-pulse {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #EF4444;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .header-right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+    .status-text { font-size: 0.75rem; color: var(--text-muted); }
+    /* ---- Layout ---- */
+    main { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 70%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .hero p { color: var(--text-muted); font-size: 1.05rem; max-width: 600px; margin: 0 auto 24px; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 10px 22px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .tab-btn.active {
+      background: var(--accent2);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: var(--glow);
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 18px;
+      letter-spacing: 0.3px;
+    }
+    label { display: block; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 14px;
+      font-size: 0.92rem;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    .range-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .range-row input[type=range] { flex: 1; accent-color: var(--accent); margin-bottom: 0; }
+    .range-val { font-size: 0.88rem; font-weight: 700; color: var(--accent); min-width: 56px; text-align: right; }
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-primary {
+      background: var(--accent2);
+      color: #fff;
+      border: 1.5px solid var(--accent);
+    }
+    .btn-primary:hover { background: var(--accent); color: var(--bg); box-shadow: var(--glow); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    /* ---- Response area ---- */
+    .response-area {
+      margin-top: 20px;
+      min-height: 140px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: #A3E635;
+      overflow-x: auto;
+      position: relative;
+    }
+    .response-placeholder { color: var(--text-muted); font-family: inherit; font-style: italic; }
+    .spinner {
+      display: none;
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      position: absolute;
+      top: 14px; right: 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner.active { display: block; }
+    /* ---- Recap rendered ---- */
+    .recap-card {
+      background: linear-gradient(135deg, rgba(2,132,199,0.12), rgba(0,229,255,0.06));
+      border: 1.5px solid rgba(0,229,255,0.25);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .recap-headline { font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 12px; }
+    .recap-bullet { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 7px; padding-left: 14px; position: relative; font-family: inherit; }
+    .recap-bullet::before { content: '▸'; position: absolute; left: 0; color: var(--accent); }
+    /* ---- SSE stream ---- */
+    .stream-log {
+      height: 200px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent2) transparent;
+    }
+    .stream-entry {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: 'Consolas', monospace;
+    }
+    .stream-entry .ts { color: var(--accent); margin-right: 8px; }
+    .stream-entry .event-type-goal { color: #10B981; font-weight: 700; }
+    .stream-entry .event-type-card { color: #F59E0B; font-weight: 700; }
+    .stream-entry .event-type-var { color: #06B6D4; font-weight: 700; }
+    /* ---- Footer ---- */
+    footer {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      border-top: 1px solid var(--border);
+      margin-top: 48px;
+    }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.05); }
+    .check-label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text); font-size: 0.88rem; margin-bottom: 16px; }
+    .check-label input[type=checkbox] { width: auto; margin: 0; accent-color: var(--accent); }
+    /* highlight when content loads */
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .fade-in { animation: fadeIn 0.35s ease; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="logo-mark">⚡ COURTSIDE</div>
+      <div class="logo-sub">AI Companion · Fire TV Hackathon</div>
+    </div>
+    <span class="badge badge-live"><span class="dot-pulse"></span> LIVE DEMO</span>
+    <span class="badge badge-ai">🤖 Gemini 1.5 Flash</span>
+    <div class="header-right">
+      <span class="status-dot" id="healthDot"></span>
+      <span class="status-text" id="healthText">Checking service...</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>AI Sports Companion<br/>for Fire TV</h1>
+      <p>Catch up instantly. Understand any play. Ask anything. Jump to key moments. Spoiler-free. Family-safe.</p>
+    </section>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('recap', this)">⚡ Catch Me Up</button>
+      <button class="tab-btn" onclick="switchTab('explain', this)">🧠 Explain This</button>
+      <button class="tab-btn" onclick="switchTab('moments', this)">🎯 Key Moments</button>
+      <button class="tab-btn" onclick="switchTab('ask', this)">💬 Ask AI</button>
+      <button class="tab-btn" onclick="switchTab('stream', this)">📡 Live Stream</button>
+      <button class="tab-btn" onclick="switchTab('health', this)">🔋 Service Health</button>
+    </div>
+
+    <!-- RECAP PANEL -->
+    <div id="panel-recap" class="panel active">
+      <div class="card">
+        <div class="card-title">POST /recap — Catch Me Up</div>
+        <label>Playback position (seconds into the video)</label>
+        <div class="range-row">
+          <input type="range" id="recapNow" min="0" max="600" value="180"
+            oninput="document.getElementById('recapNowVal').textContent = this.value + 's (' + Math.floor(this.value/60) + ':' + String(this.value%60).padStart(2,'0') + ')'">
+          <span class="range-val" id="recapNowVal">180s (3:00)</span>
+        </div>
+        <label>Explanation Level</label>
+        <select id="recapLevel">
+          <option value="casual">⚽ Casual — Clear sports broadcast style</option>
+          <option value="kid">🧒 Kid — Simple, fun, age 7–12</option>
+          <option value="expert">📊 Expert — Tactical, xG, pressing systems</option>
+        </select>
+        <label class="check-label">
+          <input type="checkbox" id="recapSpoilers" />
+          Allow spoilers (show final score & winner)
+        </label>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doRecap()">⚡ Generate Recap</button>
+          <button class="btn btn-ghost" onclick="clearResponse('recapResult')">Clear</button>
+        </div>
+        <div id="recapResultRich" style="margin-top:16px;"></div>
+        <div class="response-area" id="recapResult">
+          <span class="response-placeholder">Response will appear here…</span>
+          <div class="spinner" id="recapSpinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPLAIN PANEL -->
+    <div id="panel-explain" class="panel">
+      <div class="card">
+        <div class="card-title">POST /explain — Explain This Play</div>
+        <label>Event ID (leave blank to use current playback position)</label>
+        <select id="explainEventId">
+          <option value="">— Auto-detect from playback time —</option>
+          <option value="ev-06">ev-06 · Bukayo Saka Goal (19')</option>
+          <option value="ev-07">ev-07 · Bernardo Silva Yellow Card (22')</option>
+          <option value="ev-09">ev-09 · Erling Haaland Goal (45+2')</option>
+          <option value="ev-11">ev-11 · Phil Foden Goal (71')</option>
+          <option value="ev-14">ev-14 · VAR Decision — Havertz (83')</option>
+          <option value="ev-15">ev-15 · Declan Rice Equalizer (91')</option>
+          <option value="ev-16">ev-16 · Trossard Winner (90+7')</option>
+        </select>
+        <label>Explanation Level</label>
+        <select id="explainLevel">
+          <option value="casual">⚽ Casual</option>
+          <option value="kid">🧒 Kid</option>
+          <option value="expert">📊 Expert</option>
+        </select>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doExplain()">🧠 Explain This</button>
+          <button class="btn btn-ghost" onclick="clearResponse('explainResult')">Clear</button>
+        </div>
+        <div class="response-area" id="explainResult">
+          <span class="response-placeholder">Response will appear here…</span>
+          <div class="spinner" id="explainSpinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOMENTS PANEL -->
+    <div id="panel-moments" class="panel">
+      <div class="card">
+        <div class="card-title">GET /moments — AI-Ranked Key Moments</div>
+        <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;">
+          Returns all match events ranked by AI-computed importance score. Use these timestamps to jump the Fire TV player directly to key moments.
+        </p>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doMoments()">🎯 Fetch Key Moments</button>
+          <button class="btn btn-ghost" onclick="clearResponse('momentsResult')">Clear</button>
+        </div>
+        <div class="response-area" id="momentsResult">
+          <span class="response-placeholder">Response will appear here…</span>
+          <div class="spinner" id="momentsSpinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASK PANEL -->
+    <div id="panel-ask" class="panel">
+      <div class="card">
+        <div class="card-title">POST /ask — Grounded Q&A</div>
+        <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:14px;">
+          CourtSide AI answers questions grounded <em>only</em> in match data — no hallucination, no made-up facts.
+        </p>
+        <label>Quick questions (click to use)</label>
+        <div class="chips" id="questionChips"></div>
+        <label>Your question</label>
+        <input type="text" id="askQuestion" placeholder="e.g. Who scored the first goal?" />
+        <label>Playback position (seconds)</label>
+        <div class="range-row">
+          <input type="range" id="askNow" min="0" max="600" value="180"
+            oninput="document.getElementById('askNowVal').textContent = this.value + 's'">
+          <span class="range-val" id="askNowVal">180s</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doAsk()">💬 Ask CourtSide AI</button>
+          <button class="btn btn-ghost" onclick="clearResponse('askResult')">Clear</button>
+        </div>
+        <div class="response-area" id="askResult">
+          <span class="response-placeholder">Response will appear here…</span>
+          <div class="spinner" id="askSpinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STREAM PANEL -->
+    <div id="panel-stream" class="panel">
+      <div class="card">
+        <div class="card-title">GET /stream — Live SSE Event Ticker</div>
+        <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;">
+          Subscribe to the real-time Server-Sent Events stream. The Fire TV companion panel uses this to auto-update the Live Ticker without polling.
+        </p>
+        <label>Start from (seconds)</label>
+        <div class="range-row">
+          <input type="range" id="streamStart" min="0" max="500" value="0"
+            oninput="document.getElementById('streamStartVal').textContent = this.value + 's'">
+          <span class="range-val" id="streamStartVal">0s</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="streamBtn" onclick="toggleStream()">📡 Start Stream</button>
+        </div>
+        <div class="response-area stream-log" id="streamResult">
+          <span class="response-placeholder">Stream events will appear here…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEALTH PANEL -->
+    <div id="panel-health" class="panel">
+      <div class="card">
+        <div class="card-title">GET /health — Service Status</div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doHealth()">🔋 Fetch Health</button>
+        </div>
+        <div class="response-area" id="healthResult">
+          <span class="response-placeholder">Response will appear here…</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    CourtSide AI Companion &nbsp;·&nbsp; Fire TV Hackathon &nbsp;·&nbsp;
+    Powered by <strong style="color:var(--accent)">Gemini 1.5 Flash</strong> &nbsp;·&nbsp;
+    Built with React Native Multi-TV &amp; Amazon Devices SDK
+  </footer>
+
+  <script>
+    const BASE = 'http://localhost:4000';
+
+    // ---------- Tabs ----------
+    function switchTab(id, btn) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // ---------- Health check on load ----------
+    async function checkHealth() {
+      try {
+        const r = await fetch(BASE + '/health', { signal: AbortSignal.timeout(3000) });
+        const d = await r.json();
+        document.getElementById('healthDot').style.background = '#10B981';
+        document.getElementById('healthText').textContent =
+          'Service Online · ' + (d.geminiEnabled ? '🤖 Gemini ON' : '📦 Mock Mode');
+      } catch {
+        document.getElementById('healthDot').style.background = '#EF4444';
+        document.getElementById('healthText').textContent = 'Service Offline (run: yarn dev:service)';
+      }
+    }
+    checkHealth();
+    setInterval(checkHealth, 15000);
+
+    // ---------- Helpers ----------
+    function setLoading(spinnerId, on) {
+      document.getElementById(spinnerId).classList.toggle('active', on);
+    }
+    function clearResponse(id) {
+      document.getElementById(id).innerHTML = '<span class="response-placeholder">Response will appear here…</span><div class="spinner" id="' + id.replace('Result','Spinner') + '"></div>';
+      const rich = document.getElementById(id + 'Rich');
+      if (rich) rich.innerHTML = '';
+    }
+    function showJSON(id, data) {
+      const el = document.getElementById(id);
+      const spinner = el.querySelector('.spinner');
+      el.textContent = JSON.stringify(data, null, 2);
+      if (spinner) el.appendChild(spinner);
+      el.classList.add('fade-in');
+    }
+
+    // ---------- Recap ----------
+    async function doRecap() {
+      const nowSec = +document.getElementById('recapNow').value;
+      const level = document.getElementById('recapLevel').value;
+      const spoilers = document.getElementById('recapSpoilers').checked;
+      document.getElementById('recapResultRich').innerHTML = '';
+      setLoading('recapSpinner', true);
+      try {
+        const r = await fetch(BASE + '/recap', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ matchId: 'match-ars-mci-001', nowSec, spoilers, level })
+        });
+        const d = await r.json();
+        showJSON('recapResult', d);
+        // Rich card
+        if (d.headline && d.bullets) {
+          const div = document.createElement('div');
+          div.className = 'recap-card fade-in';
+          div.innerHTML = '<div class="recap-headline">📰 ' + escHtml(d.headline) + '</div>' +
+            d.bullets.map(b => '<div class="recap-bullet">' + escHtml(b) + '</div>').join('');
+          document.getElementById('recapResultRich').appendChild(div);
+        }
+      } catch(e) {
+        document.getElementById('recapResult').textContent = '❌ Error: ' + e.message + '\n\nMake sure the service is running:\n  yarn dev:service';
+      } finally { setLoading('recapSpinner', false); }
+    }
+
+    // ---------- Explain ----------
+    async function doExplain() {
+      const eventId = document.getElementById('explainEventId').value;
+      const level = document.getElementById('explainLevel').value;
+      setLoading('explainSpinner', true);
+      try {
+        const body = { matchId: 'match-ars-mci-001', level };
+        if (eventId) body.eventId = eventId;
+        const r = await fetch(BASE + '/explain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        showJSON('explainResult', await r.json());
+      } catch(e) {
+        document.getElementById('explainResult').textContent = '❌ Error: ' + e.message;
+      } finally { setLoading('explainSpinner', false); }
+    }
+
+    // ---------- Moments ----------
+    async function doMoments() {
+      setLoading('momentsSpinner', true);
+      try {
+        const r = await fetch(BASE + '/moments?matchId=match-ars-mci-001');
+        showJSON('momentsResult', await r.json());
+      } catch(e) {
+        document.getElementById('momentsResult').textContent = '❌ Error: ' + e.message;
+      } finally { setLoading('momentsSpinner', false); }
+    }
+
+    // ---------- Ask ----------
+    const SUGGESTED = [
+      'Who scored the first goal?',
+      "Why did Bernardo Silva get booked?",
+      'What was the VAR decision on Havertz?',
+      'Who hit the stoppage time equalizer?',
+      'Who won the Premier League title this year?'
+    ];
+    (function buildChips() {
+      const container = document.getElementById('questionChips');
+      SUGGESTED.forEach(q => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = q;
+        chip.onclick = () => { document.getElementById('askQuestion').value = q; };
+        container.appendChild(chip);
+      });
+    })();
+
+    async function doAsk() {
+      const question = document.getElementById('askQuestion').value.trim();
+      if (!question) { alert('Please enter a question!'); return; }
+      const nowSec = +document.getElementById('askNow').value;
+      setLoading('askSpinner', true);
+      try {
+        const r = await fetch(BASE + '/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ matchId: 'match-ars-mci-001', question, nowSec, level: 'casual' })
+        });
+        showJSON('askResult', await r.json());
+      } catch(e) {
+        document.getElementById('askResult').textContent = '❌ Error: ' + e.message;
+      } finally { setLoading('askSpinner', false); }
+    }
+
+    document.getElementById('askQuestion').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doAsk();
+    });
+
+    // ---------- SSE Stream ----------
+    let streamSource = null;
+    function toggleStream() {
+      const btn = document.getElementById('streamBtn');
+      if (streamSource) {
+        streamSource.close();
+        streamSource = null;
+        btn.textContent = '📡 Start Stream';
+        return;
+      }
+      const startSec = document.getElementById('streamStart').value;
+      const el = document.getElementById('streamResult');
+      el.innerHTML = '';
+      streamSource = new EventSource(BASE + '/stream?nowSec=' + startSec);
+      btn.textContent = '⏹ Stop Stream';
+
+      streamSource.onmessage = (ev) => {
+        const data = JSON.parse(ev.data);
+        const entry = document.createElement('div');
+        entry.className = 'stream-entry';
+        const le = data.latestEvent;
+        const typeClass = le ? 'event-type-' + (le.type === 'var_decision' ? 'var' : le.type) : '';
+        entry.innerHTML = '<span class="ts">' + data.nowSec + 's</span> ' +
+          (le ? '<span class="' + typeClass + '">[' + le.type.toUpperCase() + ']</span> ' + escHtml(le.description) : 'No new events');
+        el.appendChild(entry);
+        el.scrollTop = el.scrollHeight;
+      };
+
+      streamSource.addEventListener('end', () => {
+        const entry = document.createElement('div');
+        entry.className = 'stream-entry';
+        entry.style.color = '#10B981';
+        entry.textContent = '✓ Match complete';
+        el.appendChild(entry);
+        streamSource = null;
+        btn.textContent = '📡 Start Stream';
+      });
+
+      streamSource.onerror = () => {
+        const entry = document.createElement('div');
+        entry.className = 'stream-entry';
+        entry.style.color = '#EF4444';
+        entry.textContent = '❌ Stream error — ensure service is running';
+        el.appendChild(entry);
+        streamSource.close();
+        streamSource = null;
+        btn.textContent = '📡 Start Stream';
+      };
+    }
+
+    // ---------- Health full ----------
+    async function doHealth() {
+      try {
+        const r = await fetch(BASE + '/health');
+        showJSON('healthResult', await r.json());
+      } catch(e) {
+        document.getElementById('healthResult').textContent = '❌ ' + e.message;
+      }
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  </script>
+</body>
+</html>
