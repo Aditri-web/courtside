@@ -8,7 +8,7 @@ import { ExplanationLevel, MatchEvent } from '../types';
 import { buildRecapPrompt, buildExplainPrompt, buildAskPrompt } from '../prompt/promptBuilder';
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const GEMINI_MODEL = 'gemini-1.5-flash-latest';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 const TIMEOUT_MS = 5000;
 
 interface GeminiCandidate {

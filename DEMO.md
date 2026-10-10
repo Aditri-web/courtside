@@ -97,7 +97,7 @@ Open `service/demo.html` directly in Chrome — no install needed.
 | `/health` | GET | Service + Gemini status |
 | `/recap` | POST | Spoiler-safe AI recap |
 | `/explain` | POST | Play/rule breakdown |
-| `/moments` | GET | AI-ranked moments |
+| `/moments` | GET | Key moments (importance-ranked) |
 | `/ask` | POST | Grounded Q&A |
 | `/live` | GET | Timeline-filtered events |
 | `/stream` | GET | SSE real-time ticker |

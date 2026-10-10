@@ -19,8 +19,12 @@ web-build/
 package-lock.json
 yarn-error.log
 .yarn/cache
-
 # macOS
 .DS_Store
 
-
+# Environment variables
+.env
+.env.*
+*.env
+!*.env.example
+!.env.example

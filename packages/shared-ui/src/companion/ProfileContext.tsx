@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Profile, ExplanationLevel } from './types';
+import { aiClient } from './aiClient';
 
 interface ProfileContextType {
   profile: Profile;
@@ -31,6 +32,11 @@ const ProfileContext = createContext<ProfileContextType>({
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
   const [aiServiceUrl, setAiServiceUrl] = useState<string>('http://localhost:4000');
+
+  const updateAiServiceUrl = (url: string) => {
+    setAiServiceUrl(url);
+    aiClient.setBaseUrl(url);
+  };
 
   const setMode = (mode: 'standard' | 'family') => {
     setProfile((prev) => ({
@@ -73,7 +79,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setLevel,
         setFontScale,
         aiServiceUrl,
-        setAiServiceUrl
+        setAiServiceUrl: updateAiServiceUrl
       }}
     >
       {children}

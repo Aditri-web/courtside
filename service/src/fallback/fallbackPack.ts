@@ -112,23 +112,56 @@ export function getFallbackMoments(): MomentsResponse {
 export function getFallbackAsk(question: string, nowSec: number): AskResponse {
   const q = question.toLowerCase();
 
-  if (q.includes('who scored') || q.includes('first goal') || q.includes('who opened')) {
+  if (q.includes('who scored') || q.includes('first goal') || q.includes('who opened') || q.includes('goals')) {
+    const goalsSoFar = [
+      { text: 'Bukayo Saka (19\', tSec 34) for Arsenal', tSec: 34, id: 'ev-06' },
+      { text: 'Erling Haaland (45+1\', tSec 74) for Manchester City', tSec: 74, id: 'ev-13' },
+      { text: 'Phil Foden (71\', tSec 120) for Manchester City', tSec: 120, id: 'ev-21' },
+      { text: 'Declan Rice (90+1\', tSec 156) for Arsenal', tSec: 156, id: 'ev-27' },
+      { text: 'Leandro Trossard (90+7\', tSec 168) for Arsenal', tSec: 168, id: 'ev-29' }
+    ].filter((g) => g.tSec <= nowSec);
+
+    if (goalsSoFar.length === 0) {
+      return {
+        question,
+        answer: 'No goals have been scored yet up to this point in the match.',
+        sources: [],
+        grounded: true
+      };
+    }
+
+    if (q.includes('first goal') || q.includes('who opened')) {
+      return {
+        question,
+        answer: 'Bukayo Saka opened the scoring for Arsenal in the 19th minute (tSec 34) with a curled strike into the bottom corner.',
+        sources: ['ev-06'],
+        relatedMomentId: 'ev-06',
+        suggestedFollowUps: nowSec >= 74 ? ['Who equalized for Manchester City?', 'Did VAR review any goals?'] : ['Who had the early chances?'],
+        grounded: true
+      };
+    }
+
     return {
       question,
-      answer: 'Bukayo Saka opened the scoring for Arsenal in the 19th minute (tSec 34) with a curled strike into the bottom corner.',
-      sources: ['ev-06'],
-      relatedMomentId: 'ev-06',
-      suggestedFollowUps: ['Who equalized for Manchester City?', 'Did VAR review any goals?'],
+      answer: `Goals scored up to this point: ${goalsSoFar.map((g) => g.text).join('; ')}.`,
+      sources: goalsSoFar.map((g) => g.id),
+      relatedMomentId: goalsSoFar[goalsSoFar.length - 1].id,
+      suggestedFollowUps: ['Who scored first?', 'Who received cards?'],
       grounded: true
     };
   }
 
   if (q.includes('haaland') || q.includes('equaliz') || q.includes('city score')) {
     if (nowSec < 74) {
+      const earlyChances = [
+        { id: 'ev-04', tSec: 21 },
+        { id: 'ev-05', tSec: 27 }
+      ].filter((e) => e.tSec <= nowSec).map((e) => e.id);
+
       return {
         question,
         answer: 'Manchester City has had close chances from Haaland and De Bruyne, but has not scored yet up to this point in the match.',
-        sources: ['ev-04', 'ev-05'],
+        sources: earlyChances,
         grounded: true
       };
     }
@@ -143,10 +176,22 @@ export function getFallbackAsk(question: string, nowSec: number): AskResponse {
   }
 
   if (q.includes('var') || q.includes('penalty') || q.includes('foul')) {
+    if (nowSec < 90) {
+      return {
+        question,
+        answer: 'There have been no VAR reviews or penalty decisions yet up to this point in the match.',
+        sources: [],
+        grounded: true
+      };
+    }
+
+    const varSources = ['ev-16'];
+    if (nowSec >= 96) varSources.push('ev-17');
+
     return {
       question,
       answer: 'At minute 52 (tSec 90), VAR reviewed a potential penalty on Kai Havertz, but referee Michael Oliver confirmed no penalty due to a clean challenge by Ruben Dias.',
-      sources: ['ev-16', 'ev-17'],
+      sources: varSources,
       relatedMomentId: 'ev-16',
       suggestedFollowUps: ['Who received yellow cards?', 'What substitutions happened?'],
       grounded: true
@@ -154,10 +199,26 @@ export function getFallbackAsk(question: string, nowSec: number): AskResponse {
   }
 
   if (q.includes('yellow') || q.includes('card')) {
+    const cardEvents = [
+      { player: 'Bernardo Silva (22\', dissent)', tSec: 40, id: 'ev-07' },
+      { player: 'Thomas Partey (41\', foul)', tSec: 68, id: 'ev-12' },
+      { player: 'Ruben Dias (75\', shirt pull)', tSec: 126, id: 'ev-22' },
+      { player: 'Leandro Trossard (90+8\')', tSec: 174, id: 'ev-30' }
+    ].filter((c) => c.tSec <= nowSec);
+
+    if (cardEvents.length === 0) {
+      return {
+        question,
+        answer: 'No yellow cards have been issued yet up to this point in the match.',
+        sources: [],
+        grounded: true
+      };
+    }
+
     return {
       question,
-      answer: 'Yellow cards were shown to Bernardo Silva (22\', dissent), Thomas Partey (41\', foul), Ruben Dias (75\', shirt pull), and Leandro Trossard (90+8\').',
-      sources: ['ev-07', 'ev-12', 'ev-22', 'ev-30'],
+      answer: `Yellow cards shown so far: ${cardEvents.map((c) => c.player).join(', ')}.`,
+      sources: cardEvents.map((c) => c.id),
       grounded: true
     };
   }

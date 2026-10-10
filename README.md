@@ -24,11 +24,11 @@ Built for the **Amazon Devices & Services Hackathon** using:
 |---------|-------------|
 | ⚡ **Catch Me Up** | Spoiler-free AI recap from any playback position |
 | 🧠 **Explain This** | Breaks down any play/call for Kid / Casual / Expert audiences |
-| 🎯 **Key Moments** | AI-ranked turning points — press SELECT to jump there |
-| 💬 **Ask CourtSide** | Grounded Q&A (no hallucination) from visible match events |
-| 📡 **Live Ticker** | SSE stream synced to video playback timeline |
+| 🎯 **Key Moments** | Critical turning points ranked by event importance (weight ≥ 0.75) — press SELECT to jump video |
+| 💬 **Ask CourtSide** | Grounded Q&A (no hallucination) constrained to visible match events |
+| 📡 **Live Ticker** | SSE stream (`/stream`) & timeline-synced companion event overlay |
 | 👨‍👩‍👧 **Family Mode** | Kid-safe language, forced spoiler protection, large 10-foot fonts |
-| 🛡️ **Spoiler Guard** | Mathematically impossible to leak future goals before you reach them |
+| 🛡️ **Spoiler Guard** | Temporal event filtering (tSec ≤ nowSec) + keyword & schema guardrails |
 
 ---
 

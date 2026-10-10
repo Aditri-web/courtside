@@ -128,10 +128,11 @@ export class LlmAdapter {
       }
     }
 
+    const visibleEvents = DEMO_EVENTS.filter((e) => e.tSec <= nowSec);
     const fallback = getFallbackAsk(req.question, nowSec);
     const validated = validateAsk(
       fallback,
-      DEMO_EVENTS.map((e) => e.id)
+      visibleEvents.map((e) => e.id)
     );
     globalCache.set(cacheKey, validated);
     return validated;
